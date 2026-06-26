@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Masterclass · Criar um App do Zero com Claude Code</title>
+<style>
+  :root{
+    --bg:#000000; --surface:#1c1c1e; --surface-2:#2c2c2e;
+    --hair:rgba(255,255,255,.10); --hair-strong:rgba(255,255,255,.16);
+    --txt:#f5f5f7; --txt-2:#a1a1a6; --txt-3:#6e6e73;
+    --blue:#0a84ff; --blue-soft:rgba(10,132,255,.14);
+    --green:#30d158; --amber:#ffd60a; --pink:#ff375f;
+    --r:20px; --maxw:980px;
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",system-ui,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono","Menlo",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--txt);font-family:var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    line-height:1.5;letter-spacing:-.01em;
+  }
+  /* deck / slides */
+  .deck{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  .slide{
+    min-height:100vh;scroll-snap-align:start;scroll-snap-stop:always;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:clamp(28px,6vw,90px);position:relative;
+  }
+  .wrap{width:100%;max-width:var(--maxw);margin:0 auto}
+  .kicker{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);margin-bottom:18px}
+  h1{font-size:clamp(34px,6vw,68px);font-weight:700;letter-spacing:-.03em;line-height:1.04}
+  h2{font-size:clamp(26px,4.4vw,46px);font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-bottom:8px}
+  h3{font-size:clamp(18px,2.4vw,23px);font-weight:600;letter-spacing:-.02em}
+  .lead{font-size:clamp(17px,2.2vw,21px);color:var(--txt-2);margin-top:18px;max-width:720px}
+  p{color:var(--txt-2);font-size:clamp(15px,1.9vw,17px)}
+  .muted{color:var(--txt-3)}
+  strong,b{color:var(--txt);font-weight:600}
+  /* cover */
+  .cover{background:
+     radial-gradient(1100px 600px at 50% -10%,rgba(10,132,255,.22),transparent 60%),
+     radial-gradient(800px 500px at 90% 110%,rgba(255,55,95,.10),transparent 60%);
+     text-align:center;align-items:center}
+  .cover h1{max-width:14ch}
+  .badge-soft{display:inline-flex;gap:8px;align-items:center;padding:7px 14px;border:1px solid var(--hair-strong);border-radius:999px;font-size:13px;color:var(--txt-2);margin-bottom:30px;background:rgba(255,255,255,.03)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+  /* grids & cards */
+  .grid{display:grid;gap:16px;margin-top:34px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:var(--r);padding:22px 22px}
+  .card h3{margin-bottom:7px}
+  .card p{font-size:15px}
+  .card .ico{font-size:26px;margin-bottom:12px;display:block}
+  .accent{border-color:rgba(10,132,255,.35);background:linear-gradient(180deg,rgba(10,132,255,.10),rgba(10,132,255,.02))}
+  /* list */
+  ul.clean{list-style:none;margin-top:26px;display:flex;flex-direction:column;gap:14px}
+  ul.clean li{display:flex;gap:14px;align-items:flex-start;font-size:clamp(16px,2vw,18px);color:var(--txt-2)}
+  ul.clean li b{color:var(--txt)}
+  .num{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:700;font-size:14px;border:1px solid rgba(10,132,255,.3)}
+  .chk{flex:0 0 auto;color:var(--green);font-weight:700;margin-top:1px}
+  /* vs columns */
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch;margin-top:34px}
+  @media(max-width:760px){.vs{grid-template-columns:1fr}.vs .mid{display:none}}
+  .vs .mid{display:grid;place-items:center;color:var(--txt-3);font-weight:700;font-size:14px}
+  .vs h3{margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .vs ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .vs ul li{font-size:15px;color:var(--txt-2);padding-left:22px;position:relative}
+  .vs ul li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:50%;background:var(--txt-3)}
+  .vs .code li::before{background:var(--blue)}
+  /* pills */
+  .pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:7px;vertical-align:middle}
+  .must{background:rgba(48,209,88,.16);color:var(--green)}
+  .should{background:rgba(255,214,10,.16);color:var(--amber)}
+  .could{background:rgba(255,255,255,.10);color:var(--txt-2)}
+  /* prompt block */
+  .prompt{margin-top:20px;background:#111113;border:1px solid var(--hair);border-radius:16px;overflow:hidden}
+  .prompt .bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--hair)}
+  .prompt .bar .label{font-size:12px;color:var(--txt-3);font-weight:600;letter-spacing:.03em;display:flex;gap:8px;align-items:center}
+  .prompt .bar .label::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--blue)}
+  .copy{appearance:none;border:1px solid var(--hair-strong);background:rgba(255,255,255,.04);color:var(--txt);font:inherit;font-size:12px;font-weight:600;padding:6px 13px;border-radius:8px;cursor:pointer;transition:.18s;display:flex;gap:6px;align-items:center}
+  .copy:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+  .copy.ok{background:var(--green);border-color:var(--green);color:#04210d}
+  .prompt pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.62;color:#e7e7ea;white-space:pre-wrap;word-break:break-word}
+  .prompt.small pre{font-size:12.5px}
+  /* tool chips */
+  .tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .tchip{display:flex;gap:9px;align-items:center;padding:9px 14px;border:1px solid var(--hair);border-radius:12px;background:rgba(255,255,255,.04);font-size:14px;color:var(--txt-2)}
+  .tchip b{color:var(--txt)}
+  /* flow */
+  .flow{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px;align-items:center}
+  .step{padding:12px 16px;border:1px solid var(--hair);border-radius:13px;background:rgba(255,255,255,.04);font-size:14.5px;color:var(--txt);font-weight:600}
+  .step span{display:block;font-size:12px;color:var(--txt-3);font-weight:500;margin-top:2px}
+  .arrow{color:var(--txt-3);font-size:18px}
+  /* progress + counter + nav */
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--blue),#5e9bff);width:0;z-index:50;transition:width .25s ease}
+  .counter{position:fixed;bottom:22px;right:24px;z-index:50;font-size:13px;color:var(--txt-3);font-variant-numeric:tabular-nums;background:rgba(0,0,0,.4);padding:5px 11px;border-radius:999px;border:1px solid var(--hair);backdrop-filter:blur(10px)}
+  .hint{position:fixed;bottom:22px;left:24px;z-index:50;font-size:12px;color:var(--txt-3);display:flex;gap:7px;align-items:center}
+  kbd{font-family:var(--mono);font-size:11px;background:var(--surface-2);border:1px solid var(--hair-strong);border-bottom-width:2px;border-radius:6px;padding:2px 7px;color:var(--txt-2)}
+  @media(max-width:640px){.hint{display:none}}
+  .footnote{margin-top:26px;font-size:13px;color:var(--txt-3)}
+  .brandline{margin-top:40px;font-size:14px;color:var(--txt-3)}
+  .tag{color:var(--blue);font-weight:600}
+</style>
+</head>
+<body>
+<div class="progress" id="bar"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 · CAPA -->
+  <section class="slide cover">
+    <div class="wrap">
+      <div class="badge-soft"><span class="dot"></span> Masterclass ao vivo</div>
+      <h1>Criar um App do Zero<br>com <span class="tag">Claude Code</span></h1>
+      <p class="lead" style="margin-left:auto;margin-right:auto">Do "tenho uma ideia" ao app instalado no celular. Sem ser programador, construindo junto, em tempo real.</p>
+      <div class="brandline">The AI Office · Allan Ederich</div>
+    </div>
+  </section>
+
+  <!-- 2 · PROMESSA -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">O que você sai sabendo hoje</div>
+      <h2>No fim dessa aula, você sai com um app de verdade.</h2>
+      <ul class="clean">
+        <li><span class="num">1</span><div><b>A diferença</b> entre conversar com o Claude e <b>construir</b> com o Claude Code (e por que o Code muda o jogo).</div></li>
+        <li><span class="num">2</span><div><b>O setup completo</b>: o que instalar, onde criar conta, como dar o primeiro comando.</div></li>
+        <li><span class="num">3</span><div><b>O ecossistema</b>: GitHub, Supabase, Vercel e PWA explicados em português de gente.</div></li>
+        <li><span class="num">4</span><div><b>Mão na massa</b>: vocês dão a ideia, a gente constrói o app ao vivo, com os prompts prontos.</div></li>
+        <li><span class="num">★</span><div><b>Bônus</b>: um agente que pega qualquer ideia da sua cabeça e devolve um projeto pronto pra construir.</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3 · CHAT vs CODE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">A virada de chave</div>
+      <h2>Claude no chat &nbsp;vs&nbsp; Claude Code</h2>
+      <p>É o mesmo cérebro. O que muda é onde ele trabalha e o que ele consegue tocar.</p>
+      <div class="vs">
+        <div class="card">
+          <h3>💬 Claude (chat)</h3>
+          <ul>
+            <li>Você conversa, ele responde.</li>
+            <li>Ele te <b>diz</b> o código, você copia e cola na mão.</li>
+            <li>Não enxerga teus arquivos nem teu projeto.</li>
+            <li>Ótimo pra pensar, escrever, tirar dúvida.</li>
+            <li>Cada coisa é um copia-e-cola seu.</li>
+          </ul>
+        </div>
+        <div class="mid">→</div>
+        <div class="card accent">
+          <h3>⌨️ Claude Code</h3>
+          <ul class="code">
+            <li>Vive dentro do teu computador, na pasta do projeto.</li>
+            <li>Ele <b>cria e edita os arquivos sozinho</b>.</li>
+            <li>Roda comandos, instala coisas, sobe o app.</li>
+            <li>Lê o projeto inteiro pra entender o contexto.</li>
+            <li>Você pede em português, ele <b>faz</b>.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footnote">Resumo: o chat é um consultor brilhante do outro lado da mesa. O Claude Code é um dev que senta na sua máquina e põe a mão na massa.</p>
+    </div>
+  </section>
+
+  <!-- 4 · O QUE É CLAUDE CODE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">O foco da aula</div>
+      <h2>Claude Code, na prática</h2>
+      <p>É um assistente que roda no terminal (aquela telinha de comandos) e trabalha como um membro do time:</p>
+      <div class="grid g3">
+        <div class="card"><span class="ico">📂</span><h3>Mexe nos arquivos</h3><p>Cria as telas, escreve o código, organiza as pastas do projeto por conta dele.</p></div>
+        <div class="card"><span class="ico">⚙️</span><h3>Roda comandos</h3><p>Instala o que precisa, liga o app pra você ver no navegador, testa.</p></div>
+        <div class="card"><span class="ico">🧠</span><h3>Entende o todo</h3><p>Lê o projeto inteiro antes de mexer, então as mudanças fazem sentido junto.</p></div>
+        <div class="card"><span class="ico">🗣️</span><h3>Fala teu idioma</h3><p>Você descreve o que quer em português comum. Sem decorar comando nenhum.</p></div>
+        <div class="card"><span class="ico">↩️</span><h3>Dá pra voltar</h3><p>Tudo fica salvo em versões (Git). Não gostou? Volta atrás sem medo.</p></div>
+        <div class="card accent"><span class="ico">🚀</span><h3>Vai até o ar</h3><p>Do nada até o app publicado e instalável no celular, no mesmo fluxo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · SETUP -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Setup · passo a passo</div>
+      <h2>Preparando o terreno</h2>
+      <ul class="clean">
+        <li><span class="num">1</span><div><b>Conta no Claude</b> — crie em <span class="muted">claude.ai</span>. O Claude Code usa a assinatura (plano Pro/Max) ou uma chave de API.</div></li>
+        <li><span class="num">2</span><div><b>Instale o Node.js</b> — é o motor que roda as ferramentas. Baixe a versão LTS em <span class="muted">nodejs.org</span> e instale (next, next, next).</div></li>
+        <li><span class="num">3</span><div><b>Instale o Claude Code</b> — um comando só, no terminal:</div></li>
+      </ul>
+      <div class="prompt small">
+        <div class="bar"><span class="label">terminal</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+        <pre>npm install -g @anthropic-ai/claude-code</pre>
+      </div>
+      <ul class="clean" style="margin-top:18px">
+        <li><span class="num">4</span><div><b>Entre numa pasta e ligue</b> — crie uma pasta pro projeto, abra o terminal nela e digite <span class="tag">claude</span>. Na primeira vez ele pede pra você logar na conta. Pronto.</div></li>
+      </ul>
+      <p class="footnote">Dica: confirme sempre a versão mais recente e o método oficial em <span class="muted">claude.com/claude-code</span> — a instalação evolui rápido.</p>
+    </div>
+  </section>
+
+  <!-- 6 · ECOSSISTEMA -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">As ferramentas do nosso processo</div>
+      <h2>Os 4 nomes que você vai ouvir</h2>
+      <p>Pra sair de uma ideia até um app no ar, a gente usa quatro peças. Cada uma com um papel simples:</p>
+      <div class="grid g4">
+        <div class="card"><span class="ico">🐙</span><h3>GitHub</h3><p>O <b>cofre</b> do projeto. Guarda todo o código e cada versão dele. É o seu backup e seu histórico — dá pra voltar a qualquer ponto.</p></div>
+        <div class="card"><span class="ico">🗄️</span><h3>Supabase</h3><p>O <b>banco de dados</b> e o login. É onde o app guarda as informações (usuários, cadastros) e controla quem entra.</p></div>
+        <div class="card"><span class="ico">▲</span><h3>Vercel</h3><p>A <b>publicação</b>. Pega o seu app e coloca no ar com um link, pra qualquer pessoa abrir no navegador.</p></div>
+        <div class="card"><span class="ico">📱</span><h3>PWA</h3><p>O <b>truque do app</b>. Faz o site virar um aplicativo instalável no celular, com ícone na tela, abrindo em tela cheia.</p></div>
+      </div>
+      <p class="footnote">Boa notícia: o Claude Code conversa com todas elas. Você não precisa virar especialista em nenhuma — só entender o que cada uma faz.</p>
+    </div>
+  </section>
+
+  <!-- 7 · STACK -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Por baixo do capô</div>
+      <h2>A "receita" que a gente manda construir</h2>
+      <p>Você não precisa decorar isso. Mas quando pedir o app, vale dizer pro Claude Code seguir essa base — é a combinação que a gente usa em todo cliente, testada e estável:</p>
+      <div class="tools">
+        <div class="tchip">⚛️ <b>React + Vite</b> · a interface</div>
+        <div class="tchip">🎨 <b>Tailwind CSS</b> · o visual</div>
+        <div class="tchip">🟨 <b>JavaScript</b> · sem complicar</div>
+        <div class="tchip">🗄️ <b>Supabase</b> · dados + login</div>
+        <div class="tchip">📱 <b>PWA</b> · instalável</div>
+        <div class="tchip">▲ <b>Vercel</b> · no ar</div>
+      </div>
+      <p class="footnote" style="margin-top:30px">Tradução: ferramentas modernas, rápidas, que rodam liso no celular. O Claude Code já sabe trabalhar com todas.</p>
+    </div>
+  </section>
+
+  <!-- 8 · FLUXO -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Como a gente constrói</div>
+      <h2>O caminho da ideia até o app</h2>
+      <p>É assim que a squad trabalha. Hoje a gente faz tudo conversando com o Claude Code, por pedidos:</p>
+      <div class="flow">
+        <div class="step">💡 Ideia<span>o que e pra quem</span></div><span class="arrow">→</span>
+        <div class="step">🎯 Escopo<span>o mínimo que vale</span></div><span class="arrow">→</span>
+        <div class="step">🖼️ Protótipo<span>telas com dados de exemplo</span></div><span class="arrow">→</span>
+        <div class="step">🔌 Funcional<span>liga o banco e o login</span></div><span class="arrow">→</span>
+        <div class="step">🚀 No ar<span>publica + vira app</span></div>
+      </div>
+      <div class="grid g2" style="margin-top:36px">
+        <div class="card"><h3>🖼️ Primeiro o visual (protótipo)</h3><p>A gente monta <b>todas as telas com dados de mentira</b> primeiro. Você navega, sente o app, ajusta — sem mexer em banco nenhum. Rápido e barato de mudar.</p></div>
+        <div class="card"><h3>🔌 Depois liga de verdade</h3><p>Com o visual aprovado, aí sim a gente troca os dados de mentira pelos reais (Supabase): login, cadastros, tudo funcionando.</p></div>
+      </div>
+      <p class="footnote">Por que essa ordem? Porque mudar um botão de lugar no protótipo custa 1 minuto. Mudar depois de tudo conectado custa uma tarde.</p>
+    </div>
+  </section>
+
+  <!-- 9 · SKILL UI -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">A arma secreta do visual</div>
+      <h2>Bonito sem ser designer</h2>
+      <p>Tem uma <b>skill</b> (uma habilidade extra que se instala no Claude Code) chamada <span class="tag">ui-ux-pro-max</span>. Ela carrega estilos, paletas de cor, combinações de fonte e regras de boa interface. Quando você pede uma tela, o Claude consulta isso e entrega algo com cara de produto de verdade, não de trabalho de escola.</p>
+      <div class="grid g3" style="margin-top:24px">
+        <div class="card"><span class="ico">🎨</span><h3>50+ estilos</h3><p>De minimalista a glass, dark mode, bento grid…</p></div>
+        <div class="card"><span class="ico">🌈</span><h3>161 paletas</h3><p>Combinações de cor que funcionam juntas.</p></div>
+        <div class="card"><span class="ico">🔤</span><h3>57 pares de fonte</h3><p>Tipografia que combina, escolhida pra você.</p></div>
+      </div>
+      <p class="footnote">Na hora de criar a tela, basta pedir: <i>"use a skill ui-ux-pro-max, estilo minimalista dark estilo Apple"</i> — e o nível do visual sobe na hora.</p>
+    </div>
+  </section>
+
+  <!-- 10 · PWA -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">O pulo do gato</div>
+      <h2>Transformar o site em app de celular</h2>
+      <p>PWA é o que faz o seu projeto deixar de ser "um site" e virar um <b>app instalável</b>: ícone na tela inicial, abre em tela cheia, sem a barra do navegador. Parece nativo.</p>
+      <div class="grid g2">
+        <div class="card"><span class="ico">📲</span><h3>Instala sem loja</h3><p>O usuário abre o link e toca em "Adicionar à tela de início". Sem App Store, sem Play Store.</p></div>
+        <div class="card"><span class="ico">🍎</span><h3>Cara de app nativo</h3><p>Ícone, splash de abertura, tela cheia, gestos. A gente segue as diretrizes da Apple pra parecer um app de iPhone de verdade.</p></div>
+      </div>
+      <p class="footnote">É só pedir pro Claude Code: "deixa esse app instalável como PWA, com ícone e splash, pronto pra adicionar na tela do celular".</p>
+    </div>
+  </section>
+
+  <!-- 11 · DINÂMICA -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Mão na massa · agora</div>
+      <h2>Vamos construir o de vocês, ao vivo</h2>
+      <p>Joguem uma ideia de app. Eu escolho uma que dê pra construir no nosso tempo, e a gente faz junto — passando estes prompts pro Claude Code, na ordem:</p>
+      <ul class="clean" style="margin-top:22px">
+        <li><span class="num">1</span><div><b>Criar o projeto</b> com a base da casa e a primeira tela.</div></li>
+        <li><span class="num">2</span><div><b>Gerar as telas</b> do MVP com dados de exemplo, usando a skill de design.</div></li>
+        <li><span class="num">3</span><div><b>Deixar instalável</b> como app (PWA).</div></li>
+        <li><span class="num">4</span><div><b>Subir no ar</b> com um link compartilhável.</div></li>
+      </ul>
+      <p class="footnote">Os prompts prontos estão nos próximos slides — cada um com botão de copiar. É só preencher o que está entre &lt;colchetes&gt;.</p>
+    </div>
+  </section>
+
+  <!-- 12 · PROMPTS -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Caixa de ferramentas · prompts prontos</div>
+      <h2>1 · Criar o projeto</h2>
+      <div class="prompt">
+        <div class="bar"><span class="label">cole no Claude Code</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+        <pre>Crie um novo projeto de aplicativo web chamado "&lt;NOME DO APP&gt;".
+
+Stack (siga exatamente):
+- React 19 + Vite + Tailwind CSS v4 + JavaScript (sem TypeScript)
+- Estrutura de pastas: src/pages (uma tela por arquivo), src/components/ui
+  (botões, inputs reutilizáveis), src/lib (integrações), src/hooks
+- Mobile-first, pronto pra virar PWA depois
+- No index.html, o &lt;meta charset="utf-8"&gt; tem que ser a PRIMEIRA linha do &lt;head&gt;
+
+Comece criando o projeto, instalando as dependências e fazendo uma tela inicial
+simples com o nome do app. Depois ligue o app pra eu ver no navegador.</pre>
+      </div>
+      <p class="footnote">Esse prompt já embute a "receita da casa": ele nasce no padrão certo, sem você precisar saber os detalhes.</p>
+    </div>
+  </section>
+
+  <!-- 13 · PROMPT 2 -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Caixa de ferramentas · prompts prontos</div>
+      <h2>2 · Gerar as telas (com design)</h2>
+      <div class="prompt">
+        <div class="bar"><span class="label">cole no Claude Code</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+        <pre>Use a skill ui-ux-pro-max, estilo minimalista dark inspirado na Apple.
+
+Crie as telas do MVP deste app: &lt;LISTE AS TELAS, ex: Login, Lista de gastos,
+Adicionar gasto, Resumo do mês&gt;.
+
+Regras:
+- Preencha tudo com dados de exemplo realistas (nomes e valores brasileiros)
+- Navegação funcionando entre as telas
+- Cubra os estados: vazio, carregando e com conteúdo
+- Cada dado de mentira marcado com // TODO: substituir por Supabase
+- NÃO mexer em banco de dados ainda — só o visual navegável
+
+Quando terminar, me mostre as telas no navegador.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 · PROMPT 3+4 -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Caixa de ferramentas · prompts prontos</div>
+      <h2>3 · Virar app &nbsp;·&nbsp; 4 · Publicar</h2>
+      <div class="prompt small">
+        <div class="bar"><span class="label">PWA · cole no Claude Code</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+        <pre>Deixe este app instalável como PWA: crie o manifest, os ícones (192 e 512) e o
+splash, configure as meta tags da Apple pra abrir em tela cheia no iPhone, e o
+service worker pelo vite-plugin-pwa. Quero conseguir "adicionar à tela de início"
+no celular e abrir como um app, sem a barra do navegador.</pre>
+      </div>
+      <div class="prompt small">
+        <div class="bar"><span class="label">Deploy · cole no Claude Code</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+        <pre>Quero publicar este app. Suba o projeto pro meu GitHub (repositório privado) e
+depois me guie, passo a passo e em linguagem simples, pra publicar na Vercel e
+pegar o link público. Me diga exatamente onde clicar em cada etapa.</pre>
+      </div>
+      <p class="footnote">No deploy o Claude vira teu guia: como você é leigo, ele explica cada clique — criar conta, conectar o GitHub, publicar.</p>
+    </div>
+  </section>
+
+  <!-- 15 · BÔNUS -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">🎁 Bônus exclusivo da turma</div>
+      <h2>O agente que tira a ideia da sua cabeça</h2>
+      <p>Nem sempre a ideia já vem redonda. Esse agente faz uma <b>entrevista leve</b> com você (a partir de um áudio ou texto) e devolve um <b>escopo pronto</b> — incluindo um prompt pra colar no Claude Code e já começar a construir. É o mesmo método de discovery que a gente usa nos clientes, destilado pra você.</p>
+      <div class="prompt small">
+        <div class="bar"><span class="label">cole numa conversa nova do Claude</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+        <pre>Você é um parceiro de discovery de produto. Seu trabalho é pegar uma ideia crua
+de aplicativo que a pessoa vai descrever (texto ou transcrição de um áudio) e,
+através de uma entrevista leve, transformar em um escopo claro e construível.
+A pessoa NÃO é técnica. Fale simples, sem jargão, com paciência e bom humor.
+
+Conduza assim:
+1. Apresente-se em 1 linha e peça pra pessoa contar a ideia com as palavras dela.
+2. Faça UMA pergunta de cada vez. Nunca despeje um questionário. Reaja ao que ela
+   disse antes de seguir.
+3. Ao longo da conversa, descubra: a dor real (o que ela faz hoje sem o app);
+   quem usa e em que momento; o "loop de valor" mínimo (a menor sequência de ações
+   que já entrega valor); o momento "uau"; o que o app NÃO é; e como ela saberia em
+   30 dias que valeu a pena.
+4. Quando achar uma contradição ou uma premissa arriscada, aponte com gentileza.
+5. Em 5 a 8 trocas você já tem o suficiente. Aí diga "posso fechar o escopo?".
+
+No fim, entregue um documento limpo com: o app em uma frase; o problema; quem usa;
+o loop de valor mínimo; o que entra no MVP (marcando MUST/SHOULD/COULD); o que fica
+de fora de propósito; riscos e premissas; e — o mais importante — um "Prompt pronto
+pro Claude Code" em português, concreto o bastante pra colar e ver telas aparecendo,
+começando pela prototipação visual com dados de exemplo, mobile-first.
+
+Comece agora se apresentando e fazendo a primeira pergunta.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 · FECHAMENTO -->
+  <section class="slide cover">
+    <div class="wrap">
+      <div class="kicker">Recapitulando</div>
+      <h2>Você saiu daqui com isso:</h2>
+      <ul class="clean" style="max-width:640px;margin-left:auto;margin-right:auto;text-align:left">
+        <li><span class="chk">✓</span><div>Entendeu a diferença entre <b>conversar</b> e <b>construir</b> com IA.</div></li>
+        <li><span class="chk">✓</span><div>Tem o <b>setup</b> e os <b>prompts prontos</b> pra repetir em casa.</div></li>
+        <li><span class="chk">✓</span><div>Viu um app nascer <b>do zero ao ar</b>, ao vivo.</div></li>
+        <li><span class="chk">✓</span><div>Levou o <b>agente de discovery</b> de bônus.</div></li>
+      </ul>
+      <p class="lead" style="margin-left:auto;margin-right:auto;margin-top:34px">A ferramenta é poderosa. Mas o pulo do gato é o processo. E agora ele é seu.</p>
+      <div class="brandline">Obrigado! · The AI Office · Allan Ederich</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="counter" id="counter">01 / 16</div>
+<div class="hint"><kbd>↑</kbd><kbd>↓</kbd> navegar · <kbd>F</kbd> tela cheia</div>
+
+<script>
+  // copiar prompt
+  function cp(btn){
+    const pre = btn.closest('.prompt, .slide').querySelector('pre');
+    const txt = pre.innerText;
+    navigator.clipboard.writeText(txt).then(()=>{
+      const old = btn.innerText;
+      btn.innerText = '✓ Copiado';
+      btn.classList.add('ok');
+      setTimeout(()=>{btn.innerText=old;btn.classList.remove('ok')},1600);
+    }).catch(()=>{
+      // fallback
+      const r=document.createRange();r.selectNode(pre);
+      const s=getSelection();s.removeAllRanges();s.addRange(r);
+      try{document.execCommand('copy');btn.innerText='✓ Copiado';btn.classList.add('ok');setTimeout(()=>{btn.innerText='Copiar';btn.classList.remove('ok')},1600);}catch(e){}
+      s.removeAllRanges();
+    });
+  }
+
+  const deck = document.getElementById('deck');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const bar = document.getElementById('bar');
+  const counter = document.getElementById('counter');
+  const pad = n => String(n).padStart(2,'0');
+
+  function current(){
+    let idx = 0, min = Infinity;
+    slides.forEach((s,i)=>{ const d=Math.abs(s.getBoundingClientRect().top); if(d<min){min=d;idx=i;} });
+    return idx;
+  }
+  function update(){
+    const i = current();
+    bar.style.width = ((i)/(slides.length-1)*100)+'%';
+    counter.textContent = pad(i+1)+' / '+pad(slides.length);
+  }
+  function go(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    slides[i].scrollIntoView({behavior:'smooth'});
+  }
+  deck.addEventListener('scroll', ()=>{ requestAnimationFrame(update); }, {passive:true});
+  window.addEventListener('keydown', e=>{
+    if(['ArrowDown','ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); go(current()+1); }
+    else if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); go(current()-1); }
+    else if(e.key==='Home'){ e.preventDefault(); go(0); }
+    else if(e.key==='End'){ e.preventDefault(); go(slides.length-1); }
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement){document.documentElement.requestFullscreen?.();}else{document.exitFullscreen?.();} }
+  });
+  update();
+</script>
+</body>
+</html>
