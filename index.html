@@ -43,7 +43,7 @@
      radial-gradient(1100px 600px at 50% -10%,rgba(10,132,255,.22),transparent 60%),
      radial-gradient(800px 500px at 90% 110%,rgba(255,55,95,.10),transparent 60%);
      text-align:center;align-items:center}
-  .cover h1{max-width:14ch}
+  .cover h1{max-width:14ch;margin-left:auto;margin-right:auto}
   .badge-soft{display:inline-flex;gap:8px;align-items:center;padding:7px 14px;border:1px solid var(--hair-strong);border-radius:999px;font-size:13px;color:var(--txt-2);margin-bottom:30px;background:rgba(255,255,255,.03)}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
   /* grids & cards */
@@ -105,6 +105,9 @@
   .footnote{margin-top:26px;font-size:13px;color:var(--txt-3)}
   .brandline{margin-top:40px;font-size:14px;color:var(--txt-3)}
   .tag{color:var(--blue);font-weight:600}
+  .cmd{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--hair);border-radius:6px;padding:1px 6px;color:var(--txt-2)}
+  .acct{font-size:14px;color:var(--txt-2);margin-top:4px}
+  .acct b{color:var(--txt)}
 </style>
 </head>
 <body>
@@ -221,6 +224,42 @@
         <div class="card"><span class="ico">📱</span><h3>PWA</h3><p>O <b>truque do app</b>. Faz o site virar um aplicativo instalável no celular, com ícone na tela, abrindo em tela cheia.</p></div>
       </div>
       <p class="footnote">Boa notícia: o Claude Code conversa com todas elas. Você não precisa virar especialista em nenhuma — só entender o que cada uma faz.</p>
+    </div>
+  </section>
+
+  <!-- 6.5 · CONECTAR AO CLAUDE CODE -->
+  <section class="slide">
+    <div class="wrap">
+      <div class="kicker">Dando as chaves pro Claude Code</div>
+      <h2>Conectar tudo pelo terminal</h2>
+      <p>Você loga <b>uma vez só</b> em cada serviço, ali no terminal. A partir daí o Claude Code usa GitHub, Vercel e Supabase <b>sozinho</b> — sobe código, publica e configura o banco sem você clicar em nada.</p>
+      <div class="grid g3" style="margin-top:26px">
+        <div class="card">
+          <span class="ico">🐙</span><h3>GitHub</h3>
+          <p class="acct">Conta: <b>github.com</b> → Sign up</p>
+          <div class="prompt small" style="margin-top:12px">
+            <div class="bar"><span class="label">terminal</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+            <pre>gh auth login</pre>
+          </div>
+        </div>
+        <div class="card">
+          <span class="ico">▲</span><h3>Vercel</h3>
+          <p class="acct">Conta: <b>vercel.com</b> → Sign up (entra com o GitHub)</p>
+          <div class="prompt small" style="margin-top:12px">
+            <div class="bar"><span class="label">terminal</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+            <pre>npm i -g vercel && vercel login</pre>
+          </div>
+        </div>
+        <div class="card">
+          <span class="ico">🗄️</span><h3>Supabase</h3>
+          <p class="acct">Conta: <b>supabase.com</b> → Start project (entra com o GitHub)</p>
+          <div class="prompt small" style="margin-top:12px">
+            <div class="bar"><span class="label">terminal</span><button class="copy" onclick="cp(this)">Copiar</button></div>
+            <pre>npm i -g supabase && supabase login</pre>
+          </div>
+        </div>
+      </div>
+      <p class="footnote">Cada comando abre o navegador pra você confirmar o login e pronto. O do GitHub precisa do <span class="cmd">gh</span> instalado antes (Mac: <span class="cmd">brew install gh</span> · Windows: <span class="cmd">winget install GitHub.cli</span>). Travou em algo? Cola no Claude Code: <i>"me guie passo a passo pra instalar e logar o gh, a Vercel e o Supabase no terminal, explicando como pra um iniciante."</i></p>
     </div>
   </section>
 
